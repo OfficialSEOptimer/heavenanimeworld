@@ -395,11 +395,12 @@
     }
 
     .search-suggestions {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       overflow-y: auto;
       padding-bottom: 40px;
+      width: 100%;
     }
 
     .search-suggestions::-webkit-scrollbar {
@@ -416,6 +417,90 @@
       color: var(--text-muted);
       padding: 48px 16px;
       font-size: 1rem;
+    }
+
+    /* ==================== SEARCH RESULT ITEM (LIST STYLE) ==================== */
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid transparent;
+      width: 100%;
+    }
+
+    .search-result-item:hover {
+      background: var(--surface-3);
+      border-color: var(--border);
+    }
+
+    .search-result-img {
+      width: 50px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface-3);
+    }
+
+    .search-result-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .search-result-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 6px;
+    }
+
+    .search-result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .search-result-meta .badge {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-size: 0.65rem;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .badge-hd {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .badge-score {
+      background: rgba(0,0,0,0.6);
+      color: #fbbf24;
+    }
+
+    .badge-ep {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .badge-type {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
     }
 
     /* ==================== HERO SLIDER ==================== */
@@ -1101,9 +1186,13 @@
       .anime-card {
         width: 140px;
       }
-      .search-suggestions {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 12px;
+      .search-result-item {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .search-result-img {
+        width: 44px;
+        height: 62px;
       }
     }
 
@@ -1891,6 +1980,31 @@
           this.suggestions.innerHTML = '';
         },
 
+        renderSearchResult(anime) {
+          const malId = anime.mal_id || 0;
+          const img = getImage(anime) ||
+            'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+          const title = getTitle(anime);
+          const score = anime.score ? anime.score.toFixed(1) : '';
+          const episodes = anime.episodes || (anime.type === 'Movie' ? '1' : '?');
+          const type = sanitize(anime.type || 'TV');
+
+          return `
+            <a href="anime.html?id=${malId}" class="search-result-item fade-in">
+              <img class="search-result-img" src="${img}" alt="${title}" loading="lazy">
+              <div class="search-result-info">
+                <div class="search-result-title">${title}</div>
+                <div class="search-result-meta">
+                  <span class="badge badge-hd">HD</span>
+                  ${score ? `<span class="badge badge-score">⭐ ${score}</span>` : ''}
+                  ${episodes ? `<span class="badge badge-ep">EP ${episodes}</span>` : ''}
+                  <span class="badge badge-type">${type}</span>
+                </div>
+              </div>
+            </a>
+          `;
+        },
+
         async search(query) {
           if (!query || query.length < 2) {
             this.suggestions.innerHTML =
@@ -1900,17 +2014,16 @@
           this.suggestions.innerHTML = '<div class="search-empty">Searching...</div>';
           try {
             const res = await ApiEngine.fetchSafe(
-              `${API_BASE}/anime?q=${encodeURIComponent(query)}&limit=12`);
+              `${API_BASE}/anime?q=${encodeURIComponent(query)}&limit=15`);
             const data = (res && res.data) ? res.data : [];
             if (!data.length) {
               this.suggestions.innerHTML = '<div class="search-empty">No results found.</div>';
               return;
             }
-            this.suggestions.innerHTML = data.map(anime => renderAnimeCard(anime)).join('');
-            // Add click listeners to close overlay when a result is clicked
-            this.suggestions.querySelectorAll('.anime-card').forEach(card => {
-              card.addEventListener('click', (e) => {
-                // Let the navigation happen, then close overlay
+            this.suggestions.innerHTML = data.map(anime => this.renderSearchResult(anime)).join('');
+            // Close overlay when a result is clicked (after navigation begins)
+            this.suggestions.querySelectorAll('.search-result-item').forEach(item => {
+              item.addEventListener('click', (e) => {
                 setTimeout(() => this.close(), 50);
               });
             });
@@ -1933,7 +2046,6 @@
           this.input.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') this.close();
           });
-          // Close on cmd+k or ctrl+k
           document.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
               e.preventDefault();
