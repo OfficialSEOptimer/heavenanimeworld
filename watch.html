@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="Watch anime episodes in HD with sub and dub options.">
 <meta name="theme-color" content="#050505">
-<title>Watch Anime - AnimeHeaven</title>
+<title>Watch Anime - CoolsAnime</title>
 <style>
 /* ==================== VARIABLES & RESET ==================== */
 :root {
@@ -95,18 +95,32 @@ ul, ol { list-style: none; }
 }
 .menu-btn:hover { background: var(--surface-2); }
 .menu-btn svg { width: 22px; height: 22px; stroke: var(--text); }
+
+/* Logo with image (centered, responsive) */
 .logo {
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  display: flex; align-items: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  line-height: 1;
 }
-.logo-icon {
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+.logo img {
+  max-height: 44px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900; color: #fff; font-size: 14px;
+  transition: transform 0.2s ease;
+}
+.logo:hover img {
+  transform: scale(1.02);
+}
+@media (max-width: 640px) {
+  .logo img {
+    max-height: 36px;
+    max-width: 140px;
+  }
 }
 .back-btn {
   width: 40px; height: 40px;
@@ -142,6 +156,10 @@ ul, ol { list-style: none; }
 .sidebar-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 24px;
+}
+.sidebar-header .logo img {
+  max-height: 40px;
+  max-width: 150px;
 }
 .sidebar-close {
   width: 36px; height: 36px;
@@ -853,7 +871,6 @@ body.theater-mode .comments-section {
   }
 }
 </style>
-<base >
 </head>
 <body>
 
@@ -863,9 +880,8 @@ body.theater-mode .comments-section {
     <button class="menu-btn" id="menuBtn" aria-label="Open menu">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-    <a href="https://www.animeheaven.pro.bd" class="logo">
-      <div class="logo-icon">A</div>
-      <span class="text-gradient">AnimeHeaven</span>
+    <a href="https://www.coolsanime.eu.org" class="logo">
+      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEg1gffJv13tXG5Ns1n0TsfPt_WTyH4ksNUtfImGJ9CA_MkkW25zbnLwGm5IZPtFCCIF1_N44bbfQFOYcun8kHZQYqsydnbdUjuBwOaBK_39s-wEIqxnO9JKTzF7u09CS3Fmv3_R18xWIInmhy_6Qi6yaW7IhkdlcnK-O126nek9dVc8_HgZ5vSqklfZnIo=s1096" alt="CoolsAnime Logo" loading="eager">
     </a>
   </div>
   <div class="header-right">
@@ -879,13 +895,15 @@ body.theater-mode .comments-section {
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <a href="https://www.animeheaven.pro.bd" class="logo"><div class="logo-icon">A</div><span class="text-gradient">AnimeHeaven</span></a>
+    <a href="https://www.coolsanime.eu.org" class="logo">
+      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEg1gffJv13tXG5Ns1n0TsfPt_WTyH4ksNUtfImGJ9CA_MkkW25zbnLwGm5IZPtFCCIF1_N44bbfQFOYcun8kHZQYqsydnbdUjuBwOaBK_39s-wEIqxnO9JKTzF7u09CS3Fmv3_R18xWIInmhy_6Qi6yaW7IhkdlcnK-O126nek9dVc8_HgZ5vSqklfZnIo=s1096" alt="CoolsAnime Logo">
+    </a>
     <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
   <nav class="sidebar-nav">
-    <a href="https://www.animeheaven.pro.bd"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+    <a href="https://www.coolsanime.eu.org"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
     <a href="search.html"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</a>
     <a href="schedule.html"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule</a>
     <a href="creator.html"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Creator</a>
@@ -924,7 +942,7 @@ body.theater-mode .comments-section {
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
         <button class="pctrl-icon" id="btnTheater" title="Theater Mode (T)">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
         </button>
         <button class="pctrl-icon" id="btnFullscreen" title="Fullscreen (F)">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -978,7 +996,7 @@ body.theater-mode .comments-section {
 <!-- ==================== FOOTER ==================== -->
 <footer class="footer">
   <p class="footer-text">This site does not store any files on its server. All contents are provided by non-affiliated third parties.</p>
-  <p class="footer-text">&copy;Copyright 2026 - AnimeHeaven. All rights reserved. Built with ❤ for Anime fans.</p>
+  <p class="footer-text">&copy;Copyright 2026 - CoolsAnime. All rights reserved. Built with ❤ for Anime fans.</p>
   <div class="footer-social">
     <a href="https://facebook.com/alnuraraf" target="_blank" aria-label="Creator"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
     <a href="https://www.messenger.com/t/759374997256297" target="_blank" rel="noopener" aria-label="Messenger">   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">     <path d="M21 11.5C21 6.81 16.97 3 12 3S3 6.81 3 11.5c0 2.67 1.3 5.05 3.33 6.6V21l2.8-1.54c.9.25 1.87.39 2.87.39 4.97 0 9-3.81 9-8.5z"/>     <path d="M8 13l3-3 2 2 3-3-3 5-2-2-3 1z"/>   </svg> </a>
