@@ -177,26 +177,31 @@
       stroke: var(--text);
     }
 
+    /* Logo with image (centered, responsive) */
     .logo {
-      font-size: clamp(1.1rem, 2vw, 1.5rem);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 900;
-      color: #fff;
-      font-size: 14px;
+      gap: 0;
+      line-height: 1;
+    }
+    .logo img {
+      max-height: 44px;
+      width: auto;
+      max-width: 180px;
+      object-fit: contain;
+      display: block;
+      border-radius: 8px;
+      transition: transform 0.2s ease;
+    }
+    .logo:hover img {
+      transform: scale(1.02);
+    }
+    @media (max-width: 640px) {
+      .logo img {
+        max-height: 36px;
+        max-width: 140px;
+      }
     }
 
     .search-btn {
@@ -261,6 +266,10 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 24px;
+    }
+    .sidebar-header .logo img {
+      max-height: 40px;
+      max-width: 150px;
     }
 
     .sidebar-close {
@@ -1233,8 +1242,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <a href="https://www.animeheaven.pro.bd" class="logo">
-        <div class="logo-icon">A</div>
-        <span class="text-gradient">AnimeHeaven</span>
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEg1gffJv13tXG5Ns1n0TsfPt_WTyH4ksNUtfImGJ9CA_MkkW25zbnLwGm5IZPtFCCIF1_N44bbfQFOYcun8kHZQYqsydnbdUjuBwOaBK_39s-wEIqxnO9JKTzF7u09CS3Fmv3_R18xWIInmhy_6Qi6yaW7IhkdlcnK-O126nek9dVc8_HgZ5vSqklfZnIo=s1096" alt="AnimeHeaven Logo" loading="eager">
       </a>
     </div>
     <div class="header-right">
@@ -1249,8 +1257,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="https://www.animeheaven.pro.bd" class="logo">
-        <div class="logo-icon">A</div>
-        <span class="text-gradient">AnimeHeaven</span>
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEg1gffJv13tXG5Ns1n0TsfPt_WTyH4ksNUtfImGJ9CA_MkkW25zbnLwGm5IZPtFCCIF1_N44bbfQFOYcun8kHZQYqsydnbdUjuBwOaBK_39s-wEIqxnO9JKTzF7u09CS3Fmv3_R18xWIInmhy_6Qi6yaW7IhkdlcnK-O126nek9dVc8_HgZ5vSqklfZnIo=s1096" alt="AnimeHeaven Logo">
       </a>
       <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1475,7 +1482,7 @@
           const now = Date.now();
           const wait = Math.max(0, this.lastRequest + RATE_DELAY - now);
           if (wait > 0) await new Promise(r => setTimeout(r, wait));
-          this.lastRequest = Date.now();
+          this.lastRequest = now;
 
           let lastError;
           for (let i = 0; i < retries; i++) {
