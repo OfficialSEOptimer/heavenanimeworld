@@ -483,9 +483,7 @@ body.theater-mode .comments-section {
   width: 100% !important;
 }
 
-/* ========== CUSDIS DARK THEME OVERRIDES ========== */
-
-/* Root iframe container */
+/* ========== CUSDIS DARK THEME (TRANSPARENT BACKGROUNDS) ========== */
 #cusdis_thread iframe {
   width: 100% !important;
   min-height: 400px !important;
@@ -493,17 +491,15 @@ body.theater-mode .comments-section {
   background: transparent !important;
 }
 
-/* Cusdis widget root */
 .cusdis-widget,
 .cusdis-container,
 #cusdis_thread > div,
 #cusdis_thread [class*="cusdis"] {
-  background: var(--surface-2) !important;
+  background: transparent !important;
   color: var(--text) !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-/* All text */
 .cusdis-widget *,
 .cusdis-container *,
 #cusdis_thread *,
@@ -511,7 +507,6 @@ body.theater-mode .comments-section {
   color: var(--text) !important;
 }
 
-/* Headings */
 .cusdis-widget h1,
 .cusdis-widget h2,
 .cusdis-widget h3,
@@ -528,7 +523,6 @@ body.theater-mode .comments-section {
   font-weight: 700 !important;
 }
 
-/* Paragraphs, spans, divs */
 .cusdis-widget p,
 .cusdis-widget span,
 .cusdis-widget div,
@@ -538,7 +532,6 @@ body.theater-mode .comments-section {
   color: var(--text) !important;
 }
 
-/* Muted / secondary text */
 .cusdis-widget [class*="muted"],
 .cusdis-widget [class*="secondary"],
 .cusdis-widget [class*="time"],
@@ -552,7 +545,6 @@ body.theater-mode .comments-section {
   color: var(--text-muted) !important;
 }
 
-/* Links */
 .cusdis-widget a,
 #cusdis_thread a {
   color: var(--primary) !important;
@@ -576,7 +568,7 @@ body.theater-mode .comments-section {
 #cusdis_thread textarea {
   width: 100% !important;
   padding: 12px 16px !important;
-  background: var(--surface-3) !important;
+  background: rgba(26,26,26,0.6) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   color: var(--text) !important;
@@ -603,7 +595,6 @@ body.theater-mode .comments-section {
   box-shadow: 0 0 0 3px var(--primary-glow) !important;
 }
 
-/* Textarea specific */
 .cusdis-widget textarea,
 #cusdis_thread textarea {
   min-height: 120px !important;
@@ -670,14 +661,14 @@ body.theater-mode .comments-section {
   border-color: var(--primary) !important;
 }
 
-/* ========== COMMENT CARDS ========== */
+/* ========== COMMENT CARDS (TRANSPARENT) ========== */
 .cusdis-widget [class*="comment"],
 .cusdis-widget [class*="message"],
 .cusdis-widget [class*="card"],
 #cusdis_thread [class*="comment"],
 #cusdis_thread [class*="message"],
 #cusdis_thread [class*="card"] {
-  background: var(--surface-3) !important;
+  background: transparent !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   padding: 14px 16px !important;
@@ -738,7 +729,7 @@ body.theater-mode .comments-section {
 .cusdis-widget [class*="form"],
 #cusdis_thread form,
 #cusdis_thread [class*="form"] {
-  background: var(--surface-3) !important;
+  background: transparent !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   padding: 16px !important;
@@ -927,6 +918,7 @@ body.theater-mode .comments-section {
       <div class="pctrl-group">
         <span class="pctrl-label">Server</span>
         <button class="pctrl-btn active" id="serverMega">MegaPlay</button>
+        <button class="pctrl-btn" id="serverVidnest">Vidnest</button>
       </div>
       <div class="pctrl-group">
         <span class="pctrl-label">Type</span>
@@ -1106,12 +1098,18 @@ body.theater-mode .comments-section {
     totalEps: 12,
     isSub: true,
     isTheater: false,
-    animeData: null
+    animeData: null,
+    activeServer: 'megaplay', // 'megaplay' or 'vidnest'
+    anilistId: null
   };
 
   // ==================== PLAYER ====================
   function getStreamUrl() {
     const type = state.isSub ? 'sub' : 'dub';
+    if (state.activeServer === 'vidnest' && state.anilistId) {
+      return `https://vidnest.fun/animepahe/${state.anilistId}/${state.currentEp}/${type}`;
+    }
+    // default megaplay
     return `https://megaplay.buzz/stream/mal/${state.malId}/${state.currentEp}/${type}`;
   }
 
@@ -1129,12 +1127,10 @@ body.theater-mode .comments-section {
         loading.innerHTML = '<p style="color:#ef4444;">Failed to load video. Try another server or episode.</p>';
       }
     };
-    // Fallback hide loading after 5s regardless
     setTimeout(() => { if (loading) loading.classList.add('hidden'); }, 5000);
   }
 
   // ==================== EPISODES ====================
-  // Chunked episode rendering for performance with 1000+ episodes
   const EP_CHUNK_SIZE = 100;
   let renderedEpCount = 0;
 
@@ -1143,11 +1139,7 @@ body.theater-mode .comments-section {
     if (!grid) return;
     grid.innerHTML = '';
     renderedEpCount = 0;
-
-    // Render first chunk immediately
     renderEpisodeChunk(1, Math.min(EP_CHUNK_SIZE, state.totalEps));
-
-    // Render remaining chunks lazily
     if (state.totalEps > EP_CHUNK_SIZE) {
       scheduleChunkRender(EP_CHUNK_SIZE + 1);
     }
@@ -1156,10 +1148,8 @@ body.theater-mode .comments-section {
   function renderEpisodeChunk(start, end) {
     const grid = document.getElementById('episodeGrid');
     if (!grid) return;
-
     const fragment = document.createDocumentFragment();
     const actualEnd = Math.min(end, state.totalEps);
-
     for (let i = start; i <= actualEnd; i++) {
       const btn = document.createElement('button');
       btn.className = 'episode-btn' + (i === state.currentEp ? ' active' : '');
@@ -1168,7 +1158,6 @@ body.theater-mode .comments-section {
       btn.addEventListener('click', () => switchEpisode(i));
       fragment.appendChild(btn);
     }
-
     grid.appendChild(fragment);
     renderedEpCount = actualEnd;
   }
@@ -1178,7 +1167,6 @@ body.theater-mode .comments-section {
     requestAnimationFrame(() => {
       renderEpisodeChunk(start, start + EP_CHUNK_SIZE - 1);
       if (start + EP_CHUNK_SIZE <= state.totalEps) {
-        // Use setTimeout to yield to browser between chunks
         setTimeout(() => scheduleChunkRender(start + EP_CHUNK_SIZE), 10);
       }
     });
@@ -1187,15 +1175,12 @@ body.theater-mode .comments-section {
   function switchEpisode(ep) {
     if (ep < 1 || ep > state.totalEps) return;
     state.currentEp = ep;
-    // Update URL without reload
     const url = new URL(window.location.href);
     url.searchParams.set('ep', ep);
     window.history.replaceState({}, '', url);
     loadPlayer();
     updateSidebarInfo();
     updateCusdis();
-
-    // Update active state without full re-render
     const grid = document.getElementById('episodeGrid');
     if (grid) {
       grid.querySelectorAll('.episode-btn.active').forEach(b => b.classList.remove('active'));
@@ -1204,26 +1189,18 @@ body.theater-mode .comments-section {
         target.classList.add('active');
         target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       } else {
-        // Target not rendered yet, do a targeted render around it
         ensureEpisodeVisible(ep);
       }
     }
   }
 
-  // Ensure a specific episode button exists in DOM, render chunks around it if needed
   function ensureEpisodeVisible(ep) {
     const grid = document.getElementById('episodeGrid');
     if (!grid) return;
     if (grid.querySelector(`.episode-btn[data-ep="${ep}"]`)) return;
-
-    // Find which chunk contains this episode
     const chunkStart = Math.floor((ep - 1) / EP_CHUNK_SIZE) * EP_CHUNK_SIZE + 1;
     const chunkEnd = Math.min(chunkStart + EP_CHUNK_SIZE - 1, state.totalEps);
-
-    // Check if we need to render before or after current rendered range
     renderEpisodeChunk(chunkStart, chunkEnd);
-
-    // Now try to activate
     const target = grid.querySelector(`.episode-btn[data-ep="${ep}"]`);
     if (target) {
       target.classList.add('active');
@@ -1249,6 +1226,25 @@ body.theater-mode .comments-section {
   });
   document.getElementById('btnNext').addEventListener('click', nextEpisode);
   document.getElementById('btnPrev').addEventListener('click', prevEpisode);
+
+  // Server buttons
+  const serverMegaBtn = document.getElementById('serverMega');
+  const serverVidnestBtn = document.getElementById('serverVidnest');
+
+  function setActiveServer(server) {
+    state.activeServer = server;
+    serverMegaBtn.classList.toggle('active', server === 'megaplay');
+    serverVidnestBtn.classList.toggle('active', server === 'vidnest');
+    // If switching to vidnest and anilistId not yet fetched, fetch it
+    if (server === 'vidnest' && !state.anilistId) {
+      fetchAnilistId().then(() => loadPlayer());
+    } else {
+      loadPlayer();
+    }
+  }
+
+  serverMegaBtn.addEventListener('click', () => setActiveServer('megaplay'));
+  serverVidnestBtn.addEventListener('click', () => setActiveServer('vidnest'));
 
   // Theater mode
   document.getElementById('btnTheater').addEventListener('click', () => {
@@ -1282,11 +1278,30 @@ body.theater-mode .comments-section {
         document.body.classList.toggle('theater-mode', state.isTheater);
         break;
       case ' ':
-        // Space handled by iframe mostly, but we can try to focus iframe
         document.getElementById('playerFrame').focus();
         break;
     }
   });
+
+  // ==================== FETCH ANILIST ID ====================
+  async function fetchAnilistId() {
+    try {
+      const res = await ApiEngine.fetchSafe(`${API_BASE}/anime/${state.malId}/external`);
+      const data = res.data || [];
+      const anilistEntry = data.find(link => link.name && link.name.toLowerCase() === 'anilist');
+      if (anilistEntry && anilistEntry.url) {
+        const match = anilistEntry.url.match(/anime\/(\d+)/);
+        if (match) {
+          state.anilistId = match[1];
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch AniList ID:', e);
+    }
+    // Fallback: try to use malId directly (some servers accept mal id on anilist url)
+    state.anilistId = state.malId;
+  }
 
   // ==================== LOAD ANIME DATA ====================
   async function loadAnimeData() {
@@ -1296,23 +1311,18 @@ body.theater-mode .comments-section {
       if (!anime) return;
       state.animeData = anime;
 
-      // Fetch accurate episode count from /episodes endpoint
+      // Fetch accurate episode count
       await fetchEpisodeCount();
 
-      // Update back button
+      // Pre-fetch AniList ID in background (so it's ready if user switches)
+      fetchAnilistId();
+
       const backBtn = document.getElementById('backBtn');
       if (backBtn) backBtn.href = `anime.html?id=${state.malId}`;
 
-      // Sidebar info
       updateSidebarInfo();
-
-      // Related anime
       loadRelated(state.malId);
-
-      // Render episodes
       renderEpisodes();
-
-      // Load player
       loadPlayer();
       updateCusdis();
     } catch (e) {
@@ -1324,39 +1334,24 @@ body.theater-mode .comments-section {
     }
   }
 
-  // Fetch total episode count from Jikan /episodes with pagination
   async function fetchEpisodeCount() {
     let total = 0;
     let page = 1;
     let hasMore = true;
-    const maxPages = 20; // Safety limit for API calls (20 * 100 = 2000 eps max)
-
+    const maxPages = 20;
     while (hasMore && page <= maxPages) {
       try {
         const res = await ApiEngine.fetchSafe(`${API_BASE}/anime/${state.malId}/episodes?page=${page}`);
         const data = (res && res.data) ? res.data : [];
         const pagination = (res && res.pagination) ? res.pagination : {};
-
-        if (!data.length) {
-          hasMore = false;
-          break;
-        }
-
+        if (!data.length) { hasMore = false; break; }
         total += data.length;
         hasMore = pagination.has_next_page === true;
         page++;
-      } catch (e) {
-        hasMore = false;
-      }
+      } catch (e) { hasMore = false; }
     }
-
-    // Fallback to anime.episodes if API returned nothing
-    if (total === 0 && state.animeData && state.animeData.episodes) {
-      total = state.animeData.episodes;
-    }
-    // Ultimate fallback
+    if (total === 0 && state.animeData && state.animeData.episodes) total = state.animeData.episodes;
     if (total === 0) total = 12;
-
     state.totalEps = total;
   }
 
@@ -1417,20 +1412,15 @@ body.theater-mode .comments-section {
   function updateCusdis() {
     const thread = document.getElementById('cusdis_thread');
     if (!thread || !state.animeData) return;
-
     const malId = state.malId;
     const ep = state.currentEp;
     const title = getTitle(state.animeData);
-
     const pageId = `anime-${malId}-ep-${ep}`;
     const pageUrl = window.location.href;
     const pageTitle = `${title} - Episode ${ep}`;
-
     thread.setAttribute('data-page-id', pageId);
     thread.setAttribute('data-page-url', pageUrl);
     thread.setAttribute('data-page-title', pageTitle);
-
-    // Trigger Cusdis re-render if already loaded
     if (window.CUSDIS && window.CUSDIS.renderTo) {
       window.CUSDIS.renderTo(thread);
     }
