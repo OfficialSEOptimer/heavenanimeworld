@@ -845,6 +845,24 @@ body.theater-mode .comments-section {
   }
 }
 
+/* ========== DISQUS: HIDE LOCALLY-INJECTED PROMO/AD WIDGETS ========== */
+/* Disqus serves its display ads from inside the cross-origin comment
+   iframe, which page CSS cannot reach. These rules only catch any
+   recommendation/ad elements Disqus injects directly into THIS page
+   (e.g. if the "Discovery"/related-content widget is ever enabled). */
+#disqus_thread [id^="dsq-ad"],
+#disqus_thread [class*="dsq-ad"],
+#disqus_thread [id*="disqus_ad"],
+#disqus_thread [class*="disqus-ad"],
+#disqus_thread ins.adsbygoogle,
+#dsq-related-articles,
+#disqus_recommendations,
+.disqus-recommendations {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
 /* ==================== FOOTER ==================== */
 .footer {
   border-top: 1px solid var(--border);
@@ -994,18 +1012,26 @@ body.theater-mode .comments-section {
       <div class="episode-grid" id="episodeGrid"></div>
     </div>
 
-    <!-- Cusdis Comments -->
+    <!-- Disqus Comments -->
     <div class="comments-section">
       <h3>Comments</h3>
-      <div id="cusdis_thread"
-        data-host="https://cusdis.com"
-        data-app-id="3a80b954-619a-465c-bdfe-eca981f5135c"
-        data-page-id=""
-        data-page-url=""
-        data-page-title=""
-        data-theme="dark"
-      ></div>
-      <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+      <div id="disqus_thread"></div>
+      <script>
+        var disqus_config = function () {
+          var params = new URLSearchParams(window.location.search);
+          var animeId = params.get('id') || '1';
+          var ep = params.get('ep') || '1';
+          this.page.url = window.location.href;
+          this.page.identifier = 'anime-' + animeId + '-ep-' + ep;
+        };
+        (function() {
+          var d = document, s = d.createElement('script');
+          s.src = 'https://coolsanimeofficial.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
   </div>
 
@@ -1235,7 +1261,7 @@ body.theater-mode .comments-section {
     window.history.replaceState({}, '', url);
     loadPlayer();
     updateSidebarInfo();
-    updateCusdis();
+    updateDisqus();
 
     const grid = document.getElementById('episodeGrid');
     if (grid) {
@@ -1336,13 +1362,13 @@ body.theater-mode .comments-section {
       loadRelated(state.malId);
       renderEpisodes();
       loadPlayer();
-      updateCusdis();
+      updateDisqus();
     } catch (e) {
       console.error(e);
       state.totalEps = state.animeData && state.animeData.episodes ? state.animeData.episodes : 12;
       renderEpisodes();
       loadPlayer();
-      updateCusdis();
+      updateDisqus();
     }
   }
 
@@ -1434,26 +1460,68 @@ body.theater-mode .comments-section {
     }
   }
 
-  // ==================== CUSDIS COMMENTS ====================
-  function updateCusdis() {
-    const thread = document.getElementById('cusdis_thread');
+  // ==================== DISQUS COMMENTS ====================
+  // Disqus only knows about the page it was first loaded on. Since this
+  // page swaps episodes without a full reload, DISQUS.reset() is used to
+  // re-point the existing thread at the new episode's identifier/url
+  // (mirrors what the old updateCusdis() did for the Cusdis widget).
+  function updateDisqus() {
+    const thread = document.getElementById('disqus_thread');
     if (!thread || !state.animeData) return;
 
     const malId = state.malId;
     const ep = state.currentEp;
-    const title = getTitle(state.animeData);
-
     const pageId = `anime-${malId}-ep-${ep}`;
     const pageUrl = window.location.href;
-    const pageTitle = `${title} - Episode ${ep}`;
 
-    thread.setAttribute('data-page-id', pageId);
-    thread.setAttribute('data-page-url', pageUrl);
-    thread.setAttribute('data-page-title', pageTitle);
-
-    if (window.CUSDIS && window.CUSDIS.renderTo) {
-      window.CUSDIS.renderTo(thread);
+    if (window.DISQUS && window.DISQUS.reset) {
+      window.DISQUS.reset({
+        reload: true,
+        config: function () {
+          this.page.identifier = pageId;
+          this.page.url = pageUrl;
+        }
+      });
     }
+  }
+
+  // ==================== AD MITIGATION (DISQUS) ====================
+  // NOTE ON LIMITS: Disqus renders its comment widget — and any display
+  // ads it serves — inside a single cross-origin iframe pointed at
+  // disqus.com. Browser same-origin policy means JS/CSS on THIS page
+  // cannot see or alter anything inside that iframe, so ads served
+  // inside the comment box itself can't be removed from here. What CAN
+  // be done from this page is stop any extra promo/recommendation
+  // widget Disqus might inject directly into this document (outside the
+  // iframe) before it ever paints. This observer is a safety net for
+  // that case; it's a no-op if Disqus never injects anything locally.
+  function initDisqusAdGuard() {
+    const adSelectors = [
+      '[id^="dsq-ad"]', '[class*="dsq-ad"]',
+      '[id*="disqus_ad"]', '[class*="disqus-ad"]',
+      '#dsq-related-articles', '#disqus_recommendations',
+      '.disqus-recommendations', 'ins.adsbygoogle'
+    ];
+    const purge = (root) => {
+      adSelectors.forEach(sel => {
+        root.querySelectorAll && root.querySelectorAll(sel).forEach(el => el.remove());
+      });
+    };
+    const container = document.getElementById('disqus_thread');
+    if (!container || !window.MutationObserver) return;
+    purge(document);
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          adSelectors.forEach(sel => {
+            if (node.matches && node.matches(sel)) { node.remove(); return; }
+          });
+          purge(node);
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   // ==================== MOBILE NAV ====================
@@ -1484,6 +1552,7 @@ body.theater-mode .comments-section {
   async function initApp() {
     initHeaderScroll();
     MobileNav.init();
+    initDisqusAdGuard();
     await loadAnimeData();
   }
 
